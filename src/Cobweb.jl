@@ -42,7 +42,7 @@ struct Node
     children::Vector{Any}
     function Node(tag, attributes, children)
         sym = Symbol(tag)
-        sym in HTML5_TAGS || @warn "<$tag> is not a valid HTML5 tag."
+        sym in HTML5_TAGS || sym in SVG2_TAGS || @warn "<$tag> is not a valid HTML5 or SVG2 tag."
         new(sym, attrs(attributes), [children...])
     end
 end
