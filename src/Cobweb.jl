@@ -30,6 +30,11 @@ const SVG2_TAGS = [:a,:animate,:animateMotion,:animateTransform,:audio,:canvas,:
 
 const CSS_UNITS = [:ch,:cm,:em,:ex,:fr,:in,:mm,:pc,:percent,:pt,:px,:rem,:vh,:vmax,:vmin,:vw]
 
+const RESERVED_CUSTOM_ELEMENTS = [
+    "annotation-xml", "color-profile", "font-face", "font-face-src",
+    "font-face-uri", "font-face-format", "font-face-name", "missing-glyph"
+]
+
 #-----------------------------------------------------------------------------# Node
 """
     Node(tag::Symbol, attrs::OrderedDict{Symbol,String}, children::Vector)
@@ -42,11 +47,21 @@ struct Node
     children::Vector{Any}
     function Node(tag, attributes, children)
         sym = Symbol(tag)
-        sym in HTML5_TAGS || sym in SVG2_TAGS || @warn "<$tag> is not a valid HTML5 or SVG2 tag."
+        is_valid = sym in HTML5_TAGS || 
+                   sym in SVG2_TAGS || 
+                   is_custom_element(sym)
+        is_valid || @warn "<$tag> is not a valid HTML5, SVG2, or Custom Element tag."
         new(sym, attrs(attributes), [children...])
     end
 end
 
+function is_custom_element(tag::Symbol)
+    s = string(tag)
+    return occursin("-", s) &&                           # Must contain a hyphen
+           length(s) > 0 && ('a' <= s[1] <= 'z') &&      # 0th code point is ASCII lower alpha
+           !occursin(r"[A-Z]", s) &&                     # Does not contain any ASCII upper alphas
+           !(s in RESERVED_CUSTOM_ELEMENTS)              # Not in the reserved SVG/MathML list
+end
 
 tag(o::Node) = getfield(o, :tag)
 attrs(o::Node) = getfield(o, :attrs)
