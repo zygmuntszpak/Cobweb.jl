@@ -52,7 +52,8 @@ tag(o::Node) = getfield(o, :tag)
 attrs(o::Node) = getfield(o, :attrs)
 children(o::Node) = getfield(o, :children)
 
-attr_symbol(x) = Symbol(replace(string(x), '_' => '-'))
+# Replace an underscore if it isn't next to another one (to support attributes such as data-init__delay.500ms which are usedby Datastar)
+attr_symbol(x) = Symbol(replace(string(x), r"(?<!_)_(?!_)" => "-"))
 attrs(kw::AbstractDict) = OrderedDict{Symbol,Any}(attr_symbol(k) => v for (k,v) in pairs(kw))
 
 (o::Node)(x...; kw...) = Node(tag(o), merge(attrs(o), attrs(kw)), vcat(children(o), x...))
@@ -169,7 +170,7 @@ h(tag, attrs::AbstractDict, children...) = Node(tag, attrs, collect(children))
 
 Base.getproperty(::typeof(h), tag::Symbol) = h(tag)
 
-Base.propertynames(::typeof(h)) = HTML5_TAGS
+Base.propertynames(::typeof(h)) = (HTML5_TAGS..., SVG2_TAGS...)
 
 #-----------------------------------------------------------------------------# @h
 """
