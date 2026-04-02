@@ -67,8 +67,8 @@ tag(o::Node) = getfield(o, :tag)
 attrs(o::Node) = getfield(o, :attrs)
 children(o::Node) = getfield(o, :children)
 
-# Replace an underscore if it isn't next to another one (to support attributes such as data-init__delay.500ms which are usedby Datastar)
-attr_symbol(x) = Symbol(replace(string(x), r"(?<!_)_(?!_)" => "-"))
+
+attr_symbol(x) = Symbol(x)
 attrs(kw::AbstractDict) = OrderedDict{Symbol,Any}(attr_symbol(k) => v for (k,v) in pairs(kw))
 
 (o::Node)(x...; kw...) = Node(tag(o), merge(attrs(o), attrs(kw)), vcat(children(o), x...))
